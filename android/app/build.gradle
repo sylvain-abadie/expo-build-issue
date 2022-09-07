@@ -142,12 +142,43 @@ android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
 
+    flavorDimensions "env"
+    productFlavors {
+        // Configuration for the Production app product flavor
+        production {
+            dimension "env"
+            applicationId 'com.myapp.prod'
+        }
+        // Configuration for the Dev Client product flavor
+        development {
+            dimension "env"
+            applicationId 'com.myapp.dev'
+            versionCode 2
+            versionName "1"
+            buildTypes {
+                debug {
+                    debuggable false
+                }
+            }
+        }
+    }
+
+    variantFilter { variant ->
+        def invalidVariants = [
+                ["development", "release"],
+        ]
+        def buildTypeName = variant.buildType*.name
+        def flavorName = variant.flavors*.name
+
+        def isInvalid = invalidVariants.any { flavorName.contains(it[0]) && buildTypeName.contains(it[1]) }
+        if (isInvalid) {
+            setIgnore(true)
+        }
+    }
+
     defaultConfig {
-        applicationId "com.myapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
         buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()
 
         if (isNewArchitectureEnabled()) {
